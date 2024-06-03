@@ -1,0 +1,91 @@
+[
+    {
+        "properties": {
+            "GM": "1"
+        },
+        "moves": []
+    },
+    {
+        "variation": [
+            {
+                "properties": {},
+                "moves": [
+                    {
+                        "move": "B",
+                        "position": "dd"
+                    }
+                ]
+            },
+            {
+                "properties": {},
+                "moves": [
+                    {
+                        "move": "W",
+                        "position": "qq"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "variation": [
+            {
+                "properties": {},
+                "moves": [
+                    {
+                        "move": "B",
+                        "position": "pd"
+                    }
+                ]
+            },
+            {
+                "properties": {},
+                "moves": [
+                    {
+                        "move": "W",
+                        "position": "dp"
+                    }
+                ]
+            },
+            {
+                "variation": [
+                    {
+                        "properties": {},
+                        "moves": [
+                            {
+                                "move": "B",
+                                "position": "qp"
+                            }
+                        ]
+                    },
+                    {
+                        "properties": {},
+                        "moves": [
+                            {
+                                "move": "W",
+                                "position": "dq"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "variation": [
+                    {
+                        "properties": {},
+                        "moves": [
+                            {
+                                "move": "B",
+                                "position": "dq"
+                            },
+                            {
+                                "move": "W",
+                                "position": "qp"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

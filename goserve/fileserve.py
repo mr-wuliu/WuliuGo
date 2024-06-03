@@ -39,31 +39,34 @@ class FileServe:
         :param str sgf_content: SGF 文件内容
         :return: 解析后的文件内容字典
         """
-        def parses_node(node : str):
-            # 使用正则提取属性
-            propreties = {}
+        def parse_node(node):
+            # 使用正则表达式提取属性
+            properties = {}
             moves = []
             node = node.strip()
             tokens = re.findall(r'([A-Z]+)\[([^\]]*)\]', node)
-            for key , value in tokens:
-                if key in ['B','W']:
-                    moves.append({'move': key, 'position':value})
-                else :
-                    propreties[key] = value
-            return propreties, moves
-        def parse_branch(content : str):
+            for key, value in tokens:
+                if key in ['B', 'W']:  # 棋步
+                    moves.append({'move': key, 'position': value})
+                else:
+                    properties[key] = value
+            return properties, moves
+        def parse_branch(content):
+            # 递归解析分支
             branch = []
             while content:
                 if content[0] == ';':
-                    enx_idx = min([content.find(c, 1) for c in ';()'] + [len(content)])
-                    node, content = content[1 : enx_idx], content[enx_idx]
-                    props, moves = parses_node(node)
+                    # 找到下一个分号或括号作为分隔
+                    end_idx = min([content.find(c, 1) for c in ';()'] + [len(content)])
+                    node, content = content[1:end_idx], content[end_idx:]
+                    props, moves = parse_node(node)
+                    branch.append({'properties': props, 'moves': moves})
                 elif content[0] == '(':
+                    # 递归解析新分支
                     sub_branch, content = parse_branch(content[1:])
                     branch.append({'variation': sub_branch})
-                elif content[0] == '(':
-                    sub_branch, content = parse_branch(content[1:])
-                    branch.append({'variation': sub_branch})
+                elif content[0] == ')':
+                    return branch, content[1:]
                 else:
                     # 未知字符，跳过
                     content = content[1:]
@@ -74,17 +77,21 @@ class FileServe:
         else:
             result, _ = parse_branch(sgf_content)
         return result
+    @staticmethod
+    def export_to_json(game_data):
+        return json.dumps(game_data, indent=4, ensure_ascii=False)
+    
 if __name__ == '__main__':
     pass
-    # file_path = os.path.join(BASE_DIR, "ABC.sgf")
-    # if not os.path.exists(file_path):
-    #     raise FileNotFoundError(f"No file found for token: ABC")
+    file_path = os.path.join(BASE_DIR, "ABC.sgf")
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"No file found for token: ABC")
     
-    # with open(file_path, 'rb') as f:
-    #     sgf_content = f.read().decode('utf-8')
-    # sgf_content = "(;GM[1](;B[dd];W[qq])(;B[pd];W[dp](;B[qp];W[dq])(;B[dq];W[qp])))"
-
-    # game_data = parse_sgf(sgf_content)
-    # json_output = export_to_json(game_data)
-
-    # print(json_output)
+    with open(file_path, 'rb') as f:
+        sgf_content = f.read().decode('utf-8')
+    sgf_content = "(;GM[1](;B[dd];W[qq])(;B[pd];W[dp](;B[qp];W[dq])(;B[dq];W[qp])))"
+    test = FileServe()
+    out = test.parse_sgf(sgf_content=sgf_content)
+    print(out)
+    print("$$$$$$$$$$$$$$$")
+    print(FileServe.export_to_json(out))
