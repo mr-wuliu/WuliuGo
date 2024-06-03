@@ -1,0 +1,9 @@
+/docker
+/migrations
+/venv
+.flaskenv
+.history
+tempCodeRunnerFile.py
+**/__pycache__
+/backend/config.py
+develop.md
