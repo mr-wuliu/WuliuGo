@@ -29,9 +29,10 @@ class GoGame:
         self.AYS_CONFIG_PATH = ays_config_path,
         self.MODEL_PATH = model_path_default
         self.komi : float = komi
-
-
         self.rule : str = rule
+
+        if isinstance(sgf, dict):
+            self.game = GoTree(sgf)
         self.game = GoTree()
 
         #TODO: 解析sgf

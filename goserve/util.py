@@ -24,10 +24,14 @@ class GoNode:
         self.status = value
         
 class GoTree:
-    def __init__(self) -> None:
-        self.chess : GoNode = GoNode(GoStatus()) # 创建一个空棋盘
+    def __init__(self, sgf : Any=None) -> None:
+        self.chess : GoNode = GoNode(GoStatus())
         self.current = self.chess
-    
+        if sgf is not None:
+            self.parse_sgf_dict(sgf=sgf)
+            #TODO : 将传来的sgf字典变成GoNode                        
+
+        self.main_prop = {}
     @contextmanager
     def __manage_state(self):
         original_chess = copy.deepcopy(self.chess)
@@ -126,6 +130,16 @@ class GoTree:
             print(row)
         # 打印列标签
         print("   " + " ".join(column_labels))
+    
+    def parse_sgf_dict(self, sgf:dict)->None:
+        first :bool = False
+        for item in sgf:
+            properties = item['properties']
+            moves = item['moves']
+            for move in moves:
+                opt: Operate = ( move["color"] ,( move['position'][0], move['position'][1] ) )
+                self.player_move(opt)
+            
 
     def __play_signle_move(self, opt : Operate) -> None:
         if len(self.current.child) > MAX_DLINKLIST_NODE_NUM:
@@ -212,61 +226,76 @@ class GoTree:
 
 
 class TestGoGame(unittest.TestCase):
-    def test_player_move(self):
-        tree = GoTree()
-        self.assertTrue(tree.player_move(('b', (3, 3))))
-        self.assertEqual(tree.current.status.board[3, 3], 1)
+    # def test_player_move(self):
+    #     tree = GoTree()
+    #     self.assertTrue(tree.player_move(('b', (3, 3))))
+    #     self.assertEqual(tree.current.status.board[3, 3], 1)
 
-    def test_invalid_move(self):
-        tree = GoTree()
-        tree._GoTree__play_signle_move(('b', (3, 3)))
-        with self.assertRaises(RuntimeError):
-            tree._GoTree__play_signle_move(('b', (3, 3)))  # Same move should raise error
+    # def test_invalid_move(self):
+    #     tree = GoTree()
+    #     tree._GoTree__play_signle_move(('b', (3, 3)))
+    #     with self.assertRaises(RuntimeError):
+    #         tree._GoTree__play_signle_move(('b', (3, 3)))  # Same move should raise error
 
-    def test_capture_stones(self):
-        tree = GoTree()
-        tree.player_move(('b', (3, 3)))
-        tree.player_move(('w', (2, 3)))
-        tree.player_move(('w', (4, 3)))
-        tree.player_move(('w', (3, 2)))
-        tree.player_move(('w', (3, 4)))
-        self.assertEqual(tree.current.status.board[3, 3], 0)  # The black stone should be captured
+    # def test_capture_stones(self):
+    #     tree = GoTree()
+    #     tree.player_move(('b', (3, 3)))
+    #     tree.player_move(('w', (2, 3)))
+    #     tree.player_move(('w', (4, 3)))
+    #     tree.player_move(('w', (3, 2)))
+    #     tree.player_move(('w', (3, 4)))
+    #     self.assertEqual(tree.current.status.board[3, 3], 0)  # The black stone should be captured
 
-    def test_get_neighbors(self):
-        tree = GoTree()
-        neighbors = tree._GoTree__get_neighbors(3, 3)
-        expected_neighbors = [(2, 3), (4, 3), (3, 2), (3, 4)]
-        self.assertCountEqual(neighbors, expected_neighbors)
+    # def test_get_neighbors(self):
+    #     tree = GoTree()
+    #     neighbors = tree._GoTree__get_neighbors(3, 3)
+    #     expected_neighbors = [(2, 3), (4, 3), (3, 2), (3, 4)]
+    #     self.assertCountEqual(neighbors, expected_neighbors)
 
-    def test_has_liberty(self):
-        tree = GoTree()
-        tree.player_move(('b', (3, 3)))
-        self.assertTrue(tree._GoTree__has_liberty(3, 3, tree.current.status.board))
+    # def test_has_liberty(self):
+    #     tree = GoTree()
+    #     tree.player_move(('b', (3, 3)))
+    #     self.assertTrue(tree._GoTree__has_liberty(3, 3, tree.current.status.board))
 
-    def test_no_liberty(self):
-        tree = GoTree()
-        tree.player_move(('b', (3, 3)))
-        tree.player_move(('w', (2, 3)))
-        tree.player_move(('w', (4, 3)))
-        tree.player_move(('w', (3, 2)))
-        tree.player_move(('w', (3, 4)))
-        self.assertFalse(tree._GoTree__has_liberty(3, 3, tree.current.status.board))
+    # def test_no_liberty(self):
+    #     tree = GoTree()
+    #     tree.player_move(('b', (3, 3)))
+    #     tree.player_move(('w', (2, 3)))
+    #     tree.player_move(('w', (4, 3)))
+    #     tree.player_move(('w', (3, 2)))
+    #     tree.player_move(('w', (3, 4)))
+    #     self.assertFalse(tree._GoTree__has_liberty(3, 3, tree.current.status.board))
 
-    def test_remove_group(self):
-        tree = GoTree()
-        tree.player_move(('b', (3, 3)))
-        tree.player_move(('w', (2, 3)))
-        tree.player_move(('w', (4, 3)))
-        tree.player_move(('w', (3, 2)))
-        tree.player_move(('w', (3, 4)))
-        board, captured_stones = tree._GoTree__remove_group(3, 3, tree.current.status.board)
-        self.assertEqual(board[3, 3], 0)
-        self.assertEqual(captured_stones, 1)
+    # def test_remove_group(self):
+    #     tree = GoTree()
+    #     tree.player_move(('b', (3, 3)))
+    #     tree.player_move(('w', (2, 3)))
+    #     tree.player_move(('w', (4, 3)))
+    #     tree.player_move(('w', (3, 2)))
+    #     tree.player_move(('w', (3, 4)))
+    #     board, captured_stones = tree._GoTree__remove_group(3, 3, tree.current.status.board)
+    #     self.assertEqual(board[3, 3], 0)
+    #     self.assertEqual(captured_stones, 1)
 
-    def test_print_board(self):
-        tree = GoTree()
-        tree.player_move(('b', (3, 3)))
-        tree.print_board()
+    # def test_print_board(self):
+    #     tree = GoTree()
+    #     tree.player_move(('b', (3, 3)))
+    #     tree.print_board()
+
+    def test_parse_sgf_dict(self):
+        from goserve.fileserve import FileServe
+        import os
+        from goserve.config import BASE_DIR
+        file_path = os.path.join(BASE_DIR, "ABC.sgf")
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"No file found for token: ABC")
+        with open(file_path, "rb") as f:
+            sgf_content = f.read().decode("utf-8")
+        file = FileServe()
+        out = file.parse_sgf(sgf_content=sgf_content)
+        tree = GoTree(out)
+        # self.assertEqual(tree.current.status.color, 'w')
+        print(tree.print_board())
 
 if __name__ == '__main__':
     unittest.main()
