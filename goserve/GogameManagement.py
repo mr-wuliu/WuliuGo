@@ -5,6 +5,8 @@ from goserve.config import (
     KATAGO_PATH, AYS_CONFIG_PATH,
     MODEL_PATH_DEFAULT, MODEL_PATH_2
 )
+from goserve.typesys import Operate
+from goserve.util import GoTree
 
 '''
 支持多对局管理
@@ -54,7 +56,7 @@ class GogameManagement(BaseConfig):
 
         return token
     
-    def action(self, token:str, opt : dict ) -> Any:
+    def action(self, token:str, opt : dict | function ) -> Any:
         """动态映射, 将操作转化为对应的game操作
 
         :param str token: 标识符
@@ -62,17 +64,20 @@ class GogameManagement(BaseConfig):
         :return Any: 函数执行结果
         """
         if token not in self.games:
-            raise ValueError("Game not found")
-        game = self.games[token]
-        func_name = opt.get("func")
-        params = opt.get("params", [])
-        if func_name is None or params is None:
-            raise ValueError("func_name or params is None")
-        if func_name in self.core_methods:
-            func = getattr(game, func_name)
-        elif func_name in self.node_methods:
-            func = getattr(game.game, func_name)
-        else:
-            raise ArithmeticError(f"{type(game).__name__} object has no attribute '{func_name}'")
-        return func(*params)
-    
+            raise ValueError
+        if isinstance(opt, dict):
+            if token not in self.games:
+                raise ValueError("Game not found")
+            game = self.games[token]
+            func_name = opt.get("func")
+            params = opt.get("params", [])
+            if func_name is None or params is None:
+                raise ValueError("func_name or params is None")
+            if func_name in self.core_methods:
+                func = getattr(game, func_name)
+            elif func_name in self.node_methods:
+                func = getattr(game.game, func_name)
+            else:
+                raise ArithmeticError(f"{type(game).__name__} object has no attribute '{func_name}'")
+            return func(*params)
+        

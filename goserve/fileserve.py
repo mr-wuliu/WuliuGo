@@ -9,16 +9,17 @@ class FileServe:
         if not os.path.exists(BASE_DIR):
             os.makedirs(BASE_DIR)
 
-    def save_record(self, file, token: str):
+    def save_record(self, token:str, file, ):
         """
         将文件根据token存储到BASE_DIR中
         :param file: 要存储的文件内容
         :param str token: 文件的标识符
         """
         file_path = os.path.join(BASE_DIR, f"{token}.sgf")
-        with open(file_path, "wb") as f:
-            f.write(file.read())
-
+        
+        with open(file_path, 'wb') as f:
+            # TODO: 将file写为合适的格式
+            pass
     def load_file(self, token: str):
         """
         根据token从BASE_DIR中加载文件
@@ -80,6 +81,7 @@ class FileServe:
         else:
             result, _ = parse_branch(sgf_content)
         return result
+    
 
     @staticmethod
     def export_to_json(game_data):
