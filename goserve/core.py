@@ -23,7 +23,7 @@ class GoGame:
                  model_path_default=MODEL_PATH_DEFAULT,
                  komi:float=6.5,
                  rule:str = 'chinese',
-                 sgf:Any=None) -> None:
+                 sgf:Any=None) -> None: # In fact, sgf should not be None
 
         self.KATAGO_PATH = katago_path,
         self.AYS_CONFIG_PATH = ays_config_path,
@@ -31,13 +31,12 @@ class GoGame:
         self.komi : float = komi
         self.rule : str = rule
 
+        #TODO: 解析sgf
         if isinstance(sgf, dict):
             self.game = GoTree(sgf)
         self.game = GoTree()
 
-        #TODO: 解析sgf
-        if (sgf is not None):
-            pass
+
         
 
     def move(self):

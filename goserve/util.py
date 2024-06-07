@@ -86,6 +86,12 @@ class GoTree:
                 self.current = current
                 return False
         return True
+    def get_branch(self, opt : GoNode):
+        if self.current.previouse is None:
+            return 0
+        else:
+            return self.current.previouse.child.index(self.current)
+        
     def del_current(self):
         if self.current.status.color == 'none':
             # 空棋盘, 不能再删啦
@@ -132,14 +138,19 @@ class GoTree:
         print("   " + " ".join(column_labels))
     
     def parse_sgf_dict(self, sgf:dict)->None:
-        first :bool = False
-        for item in sgf:
-            properties = item['properties']
-            moves = item['moves']
-            for move in moves:
-                opt: Operate = ( move["color"] ,( move['position'][0], move['position'][1] ) )
-                self.player_move(opt)
+        stack = [(self.chess, sgf)]
+        while stack:
+            parent, data = stack.pop()
+            properties = data.get("properties", {})
+            moves = data.get("moves", [])
+            # 获取当前所处的分支
+            branch : int = self.get_branch(self.current)
+            reback_step = len(moves)
+            # 构建序列
+            self.player_move([( move['color'], move['position']) for move in moves] )
             
+
+
 
     def __play_signle_move(self, opt : Operate) -> None:
         if len(self.current.child) > MAX_DLINKLIST_NODE_NUM:

@@ -7,6 +7,7 @@ from goserve.config import (
 )
 from goserve.typesys import Operate
 from goserve.util import GoTree
+from flask import session
 
 '''
 支持多对局管理
@@ -29,7 +30,8 @@ class BaseConfig:
 class GogameManagement(BaseConfig):
     def __init__(self) -> None:
         super().__init__()
-        self.games : Dict[str, GoGame] = {}
+        # self.games : Dict[str, GoGame] = {}
+        self.current_game : GoGame | None = None
 
     def init_app(self, app):
         """注册服务
@@ -37,7 +39,7 @@ class GogameManagement(BaseConfig):
         """
         app.gogame_management = self
 
-    def createGame(self, token: str | None=None,
+    def create_game(self, token: str | None=None,
                    katago_path=KATAGO_PATH,
                    ays_config_path=AYS_CONFIG_PATH,
                    model_path_default=MODEL_PATH_DEFAULT,
@@ -51,33 +53,49 @@ class GogameManagement(BaseConfig):
         else :
             #TODO : 调用文件服务加载一个sgf文件
             pass
-        # TODO: 初始化一个GoGame对象
-        self.games[token] = GoGame()
+        session['game_token'] = token
 
+        # TODO: 初始化一个GoGame对象
+        self.current_game = GoGame(sgf=sgf_file)
         return token
     
-    def action(self, token:str, opt : dict | function ) -> Any:
+    def get_current_game(self) -> GoGame:
+        """获取当前的用户信息
+
+        :return GoGame: 返回用户棋局
+        """
+        if not self.current_game:
+            raise ValueError("No game found for current session")
+        return self.current_game
+
+    def action(self, token:str, opt : dict ) -> Any:
         """动态映射, 将操作转化为对应的game操作
 
         :param str token: 标识符
         :param dict opt: 包含函数名和参数的字典
         :return Any: 函数执行结果
         """
-        if token not in self.games:
-            raise ValueError
-        if isinstance(opt, dict):
-            if token not in self.games:
-                raise ValueError("Game not found")
-            game = self.games[token]
-            func_name = opt.get("func")
-            params = opt.get("params", [])
-            if func_name is None or params is None:
-                raise ValueError("func_name or params is None")
-            if func_name in self.core_methods:
-                func = getattr(game, func_name)
-            elif func_name in self.node_methods:
-                func = getattr(game.game, func_name)
-            else:
-                raise ArithmeticError(f"{type(game).__name__} object has no attribute '{func_name}'")
-            return func(*params)
+        game = self.get_current_game()
+        func = opt.get("func")
+        params = opt.get("params", [])
+        if func is None or params is None:
+            raise ValueError("func or Params is None")
         
+        if isinstance(func, str):
+            if hasattr(game, func):
+                func = getattr(game, func)
+            elif hasattr(game.game, func):
+                func = getattr(game.game, func)
+            else:
+                raise AttributeError(f"{type(game).__name__} object has no attribute '{func}'")
+        elif callable(func):
+            if hasattr(game, func.__name__):
+                func = getattr(game, func.__name)
+            elif hasattr(game.game, func.__name__):
+                func =getattr(game.game, func)
+            else:
+                raise AttributeError(f"{type(game).__name__} object has no attribute '{func}'")
+        else :
+            raise TypeError("func mast be callable object")
+        
+        return func(*params)
