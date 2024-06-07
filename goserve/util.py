@@ -3,6 +3,8 @@ from typing import List,  Any
 from contextlib import contextmanager
 import unittest
 import copy
+import random
+import string
 from goserve.config import (
     MAX_DLINKLIST_NODE_NUM, MAX_BOARD_SIZE
 )
@@ -235,6 +237,11 @@ class GoTree:
                         stack.append((nx, ny))
         return board, captured_stonse
 
+class StringUtil:
+    @staticmethod
+    def token():
+        characters = 'abcdefghjkmnopqrstuvwxyz'.upper() + '_'
+        return ''.join(random.sample(characters, 10))
 
 class TestGoGame(unittest.TestCase):
     def test_player_move(self):

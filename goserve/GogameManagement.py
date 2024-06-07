@@ -1,12 +1,13 @@
 from goserve.core import GoGame
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import json
 from goserve.config import (
     KATAGO_PATH, AYS_CONFIG_PATH,
     MODEL_PATH_DEFAULT, MODEL_PATH_2
 )
 from goserve.typesys import Operate
-from goserve.util import GoTree
+from goserve.util import GoTree, StringUtil
+from goserve.fileserve import FileServe
 from flask import session
 
 '''
@@ -28,10 +29,14 @@ class BaseConfig:
         ]
     
 class GogameManagement(BaseConfig):
+
+
     def __init__(self) -> None:
         super().__init__()
         # self.games : Dict[str, GoGame] = {}
         self.current_game : GoGame | None = None
+        self.file_serve = FileServe()
+
 
     def init_app(self, app):
         """注册服务
@@ -39,7 +44,7 @@ class GogameManagement(BaseConfig):
         """
         app.gogame_management = self
 
-    def create_game(self, token: str | None=None,
+    def create_game(self, token: str | None =None,
                    katago_path=KATAGO_PATH,
                    ays_config_path=AYS_CONFIG_PATH,
                    model_path_default=MODEL_PATH_DEFAULT,
@@ -47,15 +52,12 @@ class GogameManagement(BaseConfig):
                    rule = 'chinese') -> str:
         sgf_file = None
         if token is None:
-            # TODO: 调用文件服务创建一个sgf文件
-            token = 'this_is_token'
-            pass
+            token = StringUtil.token()
+            sgf_file = self.file_serve.create_record(token)
         else :
-            #TODO : 调用文件服务加载一个sgf文件
-            pass
+            token = token
+            sgf_file = self.file_serve.load_file(token)
         session['game_token'] = token
-
-        # TODO: 初始化一个GoGame对象
         self.current_game = GoGame(sgf=sgf_file)
         return token
     

@@ -9,17 +9,26 @@ class FileServe:
         if not os.path.exists(BASE_DIR):
             os.makedirs(BASE_DIR)
 
-    def save_record(self, token:str, file, ):
+    def create_record(self, token):
+        # TODO: sgf空文件创建
+        return ''
+
+    def save_record(
+        self,
+        token: str,
+        file,
+    ):
         """
         将文件根据token存储到BASE_DIR中
         :param file: 要存储的文件内容
         :param str token: 文件的标识符
         """
         file_path = os.path.join(BASE_DIR, f"{token}.sgf")
-        
-        with open(file_path, 'wb') as f:
+
+        with open(file_path, "wb") as f:
             # TODO: 将file写为合适的格式
             pass
+
     def load_file(self, token: str):
         """
         根据token从BASE_DIR中加载文件
@@ -49,7 +58,15 @@ class FileServe:
             tokens = re.findall(r"([A-Z]+)\[([^\]]*)\]", node)
             for key, value in tokens:
                 if key in ["B", "W"]:  # 棋步
-                    moves.append({"color": key.lower(), "position": ( ord(value[0]) - ord('a'), ord(value[1]) - ord('a') )})
+                    moves.append(
+                        {
+                            "color": key.lower(),
+                            "position": (
+                                ord(value[0]) - ord("a"),
+                                ord(value[1]) - ord("a"),
+                            ),
+                        }
+                    )
                 else:
                     properties[key] = value
             return properties, moves
@@ -81,7 +98,6 @@ class FileServe:
         else:
             result, _ = parse_branch(sgf_content)
         return result
-    
 
     @staticmethod
     def export_to_json(game_data):
